@@ -4,23 +4,28 @@
  */
 package modelos;
 
-/**
- *
- * @author USER
- */
 public class Producto {
+    // Atributos
     private int id;
     private String codigo;
-    private String descripcion; // Antes era nombreEquipo
-    private String proveedor;   // Antes era marca
+    private String modelo;      // Nuevo campo
+    private String categoria;   // Nuevo campo
+    private String descripcion; 
+    private String proveedor;   
     private int stock;
     private double precio;
     private int estado;
 
-    public Producto() {}
+    // Constructor Vacío
+    public Producto() {
+    }
 
-    public Producto(String codigo, String descripcion, String proveedor, int stock, double precio, int estado) {
+    // Constructor Completo
+    public Producto(int id, String codigo, String modelo, String categoria, String descripcion, String proveedor, int stock, double precio, int estado) {
+        this.id = id;
         this.codigo = codigo;
+        this.modelo = modelo;
+        this.categoria = categoria;
         this.descripcion = descripcion;
         this.proveedor = proveedor;
         this.stock = stock;
@@ -28,12 +33,21 @@ public class Producto {
         this.estado = estado;
     }
 
-    // Getters y Setters
+    // --- GETTERS Y SETTERS ---
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
     public String getCodigo() { return codigo; }
     public void setCodigo(String codigo) { this.codigo = codigo; }
+
+    // --- AQUÍ ESTÁN LOS QUE TE FALTABAN ---
+    public String getModelo() { return modelo; }
+    public void setModelo(String modelo) { this.modelo = modelo; }
+
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
+    // ---------------------------------------
 
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
@@ -49,5 +63,4 @@ public class Producto {
 
     public int getEstado() { return estado; }
     public void setEstado(int estado) { this.estado = estado; }
-    
 }
