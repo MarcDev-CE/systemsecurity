@@ -19,8 +19,9 @@ import javax.swing.table.DefaultTableModel;
 public class PanelProductos extends JPanel {
 
     // Componentes
-    private JTextField txtCodigo, txtModelo, txtDescripcion, txtProveedor, txtStock, txtPrecio, txtId;
-    private JComboBox<String> cmbCategoria;
+    private JTextField txtCodigo, txtModelo, txtDescripcion, txtStock, txtPrecio, txtId;
+    // AHORA PROVEEDOR ES UN COMBOBOX
+    private JComboBox<String> cmbCategoria, cmbProveedor; 
     private JTable tblProductos;
     private DefaultTableModel modelo;
     private ProductoDAO productoDAO = new ProductoDAO();
@@ -48,7 +49,7 @@ public class PanelProductos extends JPanel {
 
         // 2. FORMULARIO
         JPanel panelForm = new JPanel();
-        panelForm.setBounds(20, 100, 960, 200);
+        panelForm.setBounds(20, 100, 960, 230); 
         panelForm.setBackground(Color.WHITE);
         panelForm.setLayout(null);
         panelForm.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, new Color(200, 200, 200)));
@@ -74,8 +75,25 @@ public class PanelProductos extends JPanel {
         agregarEtiqueta(panelForm, "Descripción Detallada:", 20, 85);
         txtDescripcion = agregarCaja(panelForm, 20, 110, 370);
 
+        // --- AQUÍ ESTÁ EL CAMBIO: MARCA AHORA ES COMBOBOX ---
         agregarEtiqueta(panelForm, "Marca / Fabricante:", 410, 85);
-        txtProveedor = agregarCaja(panelForm, 410, 110, 200);
+        cmbProveedor = new JComboBox<>(new String[]{
+            "- Seleccione -", 
+            "Hikvision", 
+            "Western Digital", 
+            "Dahua", 
+            "Seagate", 
+            "OEM", 
+            "Generico", 
+            "Nacional", 
+            "Imou", 
+            "Ubiquiti"
+        });
+        cmbProveedor.setBounds(410, 110, 200, 30);
+        cmbProveedor.setFont(fuenteCajas);
+        cmbProveedor.setBackground(Color.WHITE);
+        panelForm.add(cmbProveedor);
+        // ---------------------------------------------------
 
         // Fila 3
         agregarEtiqueta(panelForm, "Stock Dispon.:", 20, 150);
@@ -101,20 +119,20 @@ public class PanelProductos extends JPanel {
         btnLimpiar.setBounds(800, 80, 130, 40);
         panelForm.add(btnLimpiar);
         
-        // ¡CAMBIO AQUÍ! AHORA DICE "GENERAR REPORTE"
         JButton btnReporte = crearBoton("GENERAR REPORTE", new Color(60, 63, 65));
         btnReporte.setBounds(660, 130, 270, 40); 
         panelForm.add(btnReporte);
 
         // 4. TABLA
         modelo = new DefaultTableModel();
-        modelo.addColumn("ID");
-        modelo.addColumn("CÓDIGO");
-        modelo.addColumn("MODELO");
-        modelo.addColumn("CATEGORÍA");
-        modelo.addColumn("DESCRIPCIÓN");
-        modelo.addColumn("STOCK");
-        modelo.addColumn("PRECIO");
+        modelo.addColumn("ID");          // 0
+        modelo.addColumn("CÓDIGO");      // 1
+        modelo.addColumn("MODELO");      // 2
+        modelo.addColumn("CATEGORÍA");   // 3
+        modelo.addColumn("DESCRIPCIÓN"); // 4
+        modelo.addColumn("MARCA");       // 5
+        modelo.addColumn("STOCK");       // 6
+        modelo.addColumn("PRECIO");      // 7
 
         tblProductos = new JTable(modelo);
         tblProductos.setRowHeight(30);
@@ -124,7 +142,7 @@ public class PanelProductos extends JPanel {
         tblProductos.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
         
         JScrollPane scroll = new JScrollPane(tblProductos);
-        scroll.setBounds(20, 320, 960, 300);
+        scroll.setBounds(20, 350, 960, 270); 
         add(scroll);
 
         // EVENTOS
@@ -137,8 +155,10 @@ public class PanelProductos extends JPanel {
                 txtModelo.setText(obtenerValor(fila, 2));
                 cmbCategoria.setSelectedItem(obtenerValor(fila, 3));
                 txtDescripcion.setText(obtenerValor(fila, 4));
-                txtStock.setText(obtenerValor(fila, 5));
-                txtPrecio.setText(obtenerValor(fila, 6).replace("S/ ", ""));
+                // Selecciona la marca en el combo
+                cmbProveedor.setSelectedItem(obtenerValor(fila, 5)); 
+                txtStock.setText(obtenerValor(fila, 6));
+                txtPrecio.setText(obtenerValor(fila, 7).replace("S/ ", ""));
             }
         });
 
@@ -166,75 +186,84 @@ public class PanelProductos extends JPanel {
 
         btnLimpiar.addActionListener(e -> limpiar());
         
-        // ACCIÓN DEL BOTÓN REPORTE
         btnReporte.addActionListener(e -> generarReportePDF());
 
         listarProductos();
     }
 
-    // --- MÉTODO PARA GENERAR PDF ---
+    // --- MÉTODOS ---
     private void generarReportePDF() {
         try {
             MessageFormat header = new MessageFormat("REPORTE DE INVENTARIO - SOS PERÚ");
             MessageFormat footer = new MessageFormat("Página {0,number,integer}");
-            
             boolean complete = tblProductos.print(JTable.PrintMode.FIT_WIDTH, header, footer);
-            
-            if (complete) {
-                JOptionPane.showMessageDialog(this, "✅ Reporte generado correctamente");
-            }
+            if (complete) JOptionPane.showMessageDialog(this, "✅ Reporte generado correctamente");
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "❌ Error al generar reporte: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "❌ Error: " + e.getMessage());
         }
     }
 
-    // --- AYUDAS ---
     private String obtenerValor(int fila, int col) {
         return tblProductos.getValueAt(fila, col) != null ? tblProductos.getValueAt(fila, col).toString() : "";
     }
 
-        private void listarProductos() {
+    // ==============================================================
+    // MÉTODO LISTAR CON ANCHOS DE COLUMNA AJUSTADOS (COMO EN LA FOTO 2)
+    // ==============================================================
+    private void listarProductos() {
+        // 1. Obtener datos y limpiar tabla
         List<Producto> lista = productoDAO.listar();
         modelo.setRowCount(0);
+        
+        // 2. Llenar filas
         for (Producto p : lista) {
             modelo.addRow(new Object[]{
-                p.getId(), p.getCodigo(), p.getModelo(), p.getCategoria(), 
-                p.getDescripcion(), p.getStock(), "S/ " + p.getPrecio()
+                p.getId(), 
+                p.getCodigo(), 
+                p.getModelo(), 
+                p.getCategoria(), 
+                p.getDescripcion(), 
+                p.getProveedor(), 
+                p.getStock(), 
+                "S/ " + p.getPrecio()
             });
         }
-
-        // === AQUÍ ESTÁ LA MAGIA: TAMAÑOS FIJOS ===
-        // 0: ID (Muy pequeñito)
+        
+        // 3. --- DEFINIR ANCHOS FIJOS (AQUÍ ESTÁ LA SOLUCIÓN) ---
+        
+        // Columna 0: ID (Muy angosta)
         tblProductos.getColumnModel().getColumn(0).setPreferredWidth(30);
-        tblProductos.getColumnModel().getColumn(0).setMaxWidth(40); // Evita que se estire
+        tblProductos.getColumnModel().getColumn(0).setMaxWidth(40); 
 
-        // 1: CÓDIGO (Pequeño)
+        // Columna 1: CÓDIGO (Angosta)
         tblProductos.getColumnModel().getColumn(1).setPreferredWidth(70);
 
-        // 2 y 3: MODELO y CATEGORÍA (Medianos)
-        tblProductos.getColumnModel().getColumn(2).setPreferredWidth(110);
-        tblProductos.getColumnModel().getColumn(3).setPreferredWidth(110);
+        // Columna 2: MODELO (Mediana)
+        tblProductos.getColumnModel().getColumn(2).setPreferredWidth(120);
 
-        // 4: DESCRIPCIÓN (Gigante - Se lleva el espacio sobrante)
-        tblProductos.getColumnModel().getColumn(4).setPreferredWidth(350);
+        // Columna 3: CATEGORÍA (Mediana)
+        tblProductos.getColumnModel().getColumn(3).setPreferredWidth(125);
 
-        // 5: STOCK (Pequeño)
-        tblProductos.getColumnModel().getColumn(5).setPreferredWidth(50);
+        // Columna 4: DESCRIPCIÓN (MUY ANCHA - Para ver todo el texto)
+        tblProductos.getColumnModel().getColumn(4).setPreferredWidth(310);
 
-        // 6: PRECIO (Mediano)
-        tblProductos.getColumnModel().getColumn(6).setPreferredWidth(80);
-    }
+        // Columna 5: MARCA (Mediana)
+        tblProductos.getColumnModel().getColumn(5).setPreferredWidth(100);
 
-    private void ajustarColumna(JTable table, int col, int minWidth) {
-        table.getColumnModel().getColumn(col).setPreferredWidth(minWidth);
+        // Columna 6: STOCK (Angosta)
+        tblProductos.getColumnModel().getColumn(6).setPreferredWidth(50);
+
+        // Columna 7: PRECIO (Angosta)
+        tblProductos.getColumnModel().getColumn(7).setPreferredWidth(70);
     }
 
     private void act() { listarProductos(); limpiar(); }
     
     private void limpiar() {
         txtId.setText(""); txtCodigo.setText(""); txtModelo.setText(""); 
-        txtDescripcion.setText(""); txtProveedor.setText(""); txtStock.setText(""); txtPrecio.setText("");
+        txtDescripcion.setText(""); txtStock.setText(""); txtPrecio.setText("");
         cmbCategoria.setSelectedIndex(0);
+        cmbProveedor.setSelectedIndex(0); // Limpiar combo marca
     }
 
     private boolean validar() {
@@ -247,7 +276,8 @@ public class PanelProductos extends JPanel {
         p.setModelo(txtModelo.getText());
         p.setCategoria(cmbCategoria.getSelectedItem().toString());
         p.setDescripcion(txtDescripcion.getText());
-        p.setProveedor(txtProveedor.getText());
+        // Aquí capturamos lo que elegiste del combo
+        p.setProveedor(cmbProveedor.getSelectedItem().toString());
         try { p.setStock(Integer.parseInt(txtStock.getText())); } catch(Exception e){ p.setStock(0); }
         try { p.setPrecio(Double.parseDouble(txtPrecio.getText())); } catch(Exception e){ p.setPrecio(0.0); }
         return p;
