@@ -17,6 +17,7 @@ public class UsuarioDAO {
         this.conexion = ConexionBD.obtenerConexion();
     }
 
+   
     // REGISTRAR USUARIO
     public boolean registrar(Usuario u) {
         String sql = "INSERT INTO usuarios (nombre, correo, pass, rol) VALUES (?, ?, ?, ?)";
@@ -82,4 +83,39 @@ public class UsuarioDAO {
         }
         return u; // Retorna el usuario si existe, o null si falló
     }
+    
+    // 4. MODIFICAR 
+    public boolean modificar(Usuario u) {
+        String sql = "UPDATE usuarios SET nombre=?, correo=?, pass=?, rol=? WHERE id=?";
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setString(1, u.getNombre());
+            ps.setString(2, u.getCorreo());
+            ps.setString(3, u.getPass());
+            ps.setString(4, u.getRol());
+            ps.setInt(5, u.getId());
+            ps.execute();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error al modificar: " + e.toString());
+            return false;
+        }
+    }
+
+    //  ELIMINAR 
+    public boolean eliminar(int id) {
+        String sql = "DELETE FROM usuarios WHERE id = ?";
+        try {
+            PreparedStatement ps = conexion.prepareStatement(sql);
+            ps.setInt(1, id);
+            ps.execute();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar: " + e.toString());
+            return false;
+        }
+    }
+
+    
 }
+
