@@ -11,6 +11,7 @@ import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -18,75 +19,72 @@ import javax.swing.table.DefaultTableModel;
 public class PanelProductos extends JPanel {
 
     // Componentes
-    private JTextField txtCodigo, txtDescripcion, txtProveedor, txtStock, txtPrecio, txtId;
+    private JTextField txtCodigo, txtModelo, txtDescripcion, txtProveedor, txtStock, txtPrecio, txtId;
+    private JComboBox<String> cmbCategoria;
     private JTable tblProductos;
     private DefaultTableModel modelo;
     private ProductoDAO productoDAO = new ProductoDAO();
     
-    // Fuentes personalizadas
-    private Font fuenteLabels = new Font("Arial", Font.BOLD, 13);
+    // Fuentes
+    private Font fuenteLabels = new Font("Arial", Font.BOLD, 12);
     private Font fuenteCajas = new Font("Arial", Font.PLAIN, 14);
 
     public PanelProductos() {
         setLayout(null);
-        setBackground(new Color(245, 245, 250)); // Fondo Gris Suave
+        setBackground(new Color(245, 245, 250));
 
-        // =======================================================
-        // 1. ENCABEZADO (Igual que antes)
-        // =======================================================
+        // 1. ENCABEZADO
         JPanel header = new JPanel();
-        header.setBounds(20, 20, 960, 60); // Más ancho
+        header.setBounds(20, 20, 960, 60);
         header.setBackground(new Color(25, 118, 210));
         header.setLayout(null);
         add(header);
 
         JLabel lblTitulo = new JLabel("INVENTARIO DE EQUIPOS CCTV");
-        lblTitulo.setFont(new Font("Arial Black", Font.BOLD, 22)); // Fuente más gruesa
+        lblTitulo.setFont(new Font("Arial Black", Font.BOLD, 22));
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setBounds(30, 10, 500, 40);
         header.add(lblTitulo);
 
-        // =======================================================
-        // 2. FORMULARIO HORIZONTAL (ARRIBA)
-        // =======================================================
+        // 2. FORMULARIO
         JPanel panelForm = new JPanel();
-        panelForm.setBounds(20, 100, 960, 150); // Panel ANCHO y horizontal
+        panelForm.setBounds(20, 100, 960, 200);
         panelForm.setBackground(Color.WHITE);
         panelForm.setLayout(null);
-        // Borde sutil
         panelForm.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, new Color(200, 200, 200)));
         add(panelForm);
 
-        // Campo ID Oculto
         txtId = new JTextField(); txtId.setVisible(false); panelForm.add(txtId);
 
-        // --- FILA 1 DE DATOS ---
-        // Columna 1: Código
-        agregarEtiqueta(panelForm, "Código:", 20, 20);
-        txtCodigo = agregarCaja(panelForm, 20, 45, 120); // x, y, ancho
+        // Fila 1
+        agregarEtiqueta(panelForm, "Código Interno:", 20, 20);
+        txtCodigo = agregarCaja(panelForm, 20, 45, 150);
 
-        // Columna 2: Descripción (Más ancha porque los nombres son largos)
-        agregarEtiqueta(panelForm, "Descripción del Producto:", 160, 20);
-        txtDescripcion = agregarCaja(panelForm, 160, 45, 300);
+        agregarEtiqueta(panelForm, "Modelo (Fábrica):", 190, 20);
+        txtModelo = agregarCaja(panelForm, 190, 45, 200);
 
-        // Columna 3: Proveedor
-        agregarEtiqueta(panelForm, "Marca / Proveedor:", 480, 20);
-        txtProveedor = agregarCaja(panelForm, 480, 45, 150);
-        
-        // --- FILA 2 DE DATOS ---
-        // Columna 1: Stock
-        agregarEtiqueta(panelForm, "Stock:", 20, 85);
-        txtStock = agregarCaja(panelForm, 20, 110, 120);
+        agregarEtiqueta(panelForm, "Categoría:", 410, 20);
+        cmbCategoria = new JComboBox<>(new String[]{"- Seleccione -", "Cámaras IP", "Cámaras Análogas", "Grabadores (DVR/NVR)", "Discos Duros", "Cables y Conectores", "Fuentes de Poder", "Gabinetes"});
+        cmbCategoria.setBounds(410, 45, 200, 30);
+        cmbCategoria.setFont(fuenteCajas);
+        cmbCategoria.setBackground(Color.WHITE);
+        panelForm.add(cmbCategoria);
 
-        // Columna 2: Precio
-        agregarEtiqueta(panelForm, "Precio (S/.):", 160, 85);
-        txtPrecio = agregarCaja(panelForm, 160, 110, 120);
+        // Fila 2
+        agregarEtiqueta(panelForm, "Descripción Detallada:", 20, 85);
+        txtDescripcion = agregarCaja(panelForm, 20, 110, 370);
 
-        // =======================================================
-        // 3. BOTONES (A LA DERECHA DEL FORMULARIO)
-        // =======================================================
-        // Los ponemos en el mismo panelForm pero a la derecha
-        
+        agregarEtiqueta(panelForm, "Marca / Fabricante:", 410, 85);
+        txtProveedor = agregarCaja(panelForm, 410, 110, 200);
+
+        // Fila 3
+        agregarEtiqueta(panelForm, "Stock Dispon.:", 20, 150);
+        txtStock = agregarCaja(panelForm, 20, 175, 100);
+
+        agregarEtiqueta(panelForm, "Precio Unit. (S/):", 140, 150);
+        txtPrecio = agregarCaja(panelForm, 140, 175, 100);
+
+        // --- BOTONES ---
         JButton btnGuardar = crearBoton("GUARDAR", new Color(46, 204, 113));
         btnGuardar.setBounds(660, 30, 130, 40);
         panelForm.add(btnGuardar);
@@ -96,179 +94,174 @@ public class PanelProductos extends JPanel {
         panelForm.add(btnModificar);
 
         JButton btnEliminar = crearBoton("ELIMINAR", new Color(231, 76, 60));
-        btnEliminar.setBounds(660, 85, 130, 40);
+        btnEliminar.setBounds(660, 80, 130, 40);
         panelForm.add(btnEliminar);
 
         JButton btnLimpiar = crearBoton("LIMPIAR", new Color(149, 165, 166));
-        btnLimpiar.setBounds(800, 85, 130, 40);
+        btnLimpiar.setBounds(800, 80, 130, 40);
         panelForm.add(btnLimpiar);
+        
+        // ¡CAMBIO AQUÍ! AHORA DICE "GENERAR REPORTE"
+        JButton btnReporte = crearBoton("GENERAR REPORTE", new Color(60, 63, 65));
+        btnReporte.setBounds(660, 130, 270, 40); 
+        panelForm.add(btnReporte);
 
-
-        // =======================================================
-        // 4. TABLA (ABAJO - ANCHO COMPLETO)
-        // =======================================================
+        // 4. TABLA
         modelo = new DefaultTableModel();
         modelo.addColumn("ID");
         modelo.addColumn("CÓDIGO");
+        modelo.addColumn("MODELO");
+        modelo.addColumn("CATEGORÍA");
         modelo.addColumn("DESCRIPCIÓN");
-        modelo.addColumn("MARCA");
         modelo.addColumn("STOCK");
         modelo.addColumn("PRECIO");
 
         tblProductos = new JTable(modelo);
-        tblProductos.setRowHeight(35); // Filas más altas para leer mejor
-        tblProductos.setFont(new Font("Arial", Font.PLAIN, 13));
-        tblProductos.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
-        tblProductos.getTableHeader().setBackground(new Color(50,50,50)); // Encabezado negro
+        tblProductos.setRowHeight(30);
+        tblProductos.setFont(new Font("Arial", Font.PLAIN, 12));
+        tblProductos.getTableHeader().setBackground(new Color(50,50,50));
         tblProductos.getTableHeader().setForeground(Color.WHITE);
+        tblProductos.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
         
         JScrollPane scroll = new JScrollPane(tblProductos);
-        // Ahora la tabla empieza más abajo y ocupa todo el ancho
-        scroll.setBounds(20, 270, 960, 350); 
+        scroll.setBounds(20, 320, 960, 300);
         add(scroll);
 
-        // =======================================================
-        // LÓGICA Y EVENTOS
-        // =======================================================
-        
-        // Clic en Tabla
+        // EVENTOS
         tblProductos.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int fila = tblProductos.rowAtPoint(e.getPoint());
-                txtId.setText(tblProductos.getValueAt(fila, 0).toString());
-                txtCodigo.setText(tblProductos.getValueAt(fila, 1).toString());
-                txtDescripcion.setText(tblProductos.getValueAt(fila, 2).toString());
-                txtProveedor.setText(tblProductos.getValueAt(fila, 3).toString());
-                txtStock.setText(tblProductos.getValueAt(fila, 4).toString());
-                String precioStr = tblProductos.getValueAt(fila, 5).toString();
-                txtPrecio.setText(precioStr.replace("S/ ", ""));
+                txtId.setText(obtenerValor(fila, 0));
+                txtCodigo.setText(obtenerValor(fila, 1));
+                txtModelo.setText(obtenerValor(fila, 2));
+                cmbCategoria.setSelectedItem(obtenerValor(fila, 3));
+                txtDescripcion.setText(obtenerValor(fila, 4));
+                txtStock.setText(obtenerValor(fila, 5));
+                txtPrecio.setText(obtenerValor(fila, 6).replace("S/ ", ""));
             }
         });
 
-        // Eventos Botones
         btnGuardar.addActionListener(e -> {
-            if (validarCampos()) {
-                Producto p = crearProductoDesdeForm();
-                if(productoDAO.registrar(p)) {
-                    JOptionPane.showMessageDialog(this, "✅ Producto Guardado");
-                    actualizarTodo();
-                }
+            if (validar()) {
+                Producto p = capturarDatos();
+                if(productoDAO.registrar(p)) { act(); JOptionPane.showMessageDialog(this, "✅ Guardado"); }
             }
         });
 
         btnModificar.addActionListener(e -> {
-            if (!txtId.getText().isEmpty() && validarCampos()) {
-                Producto p = crearProductoDesdeForm();
+            if (!txtId.getText().isEmpty() && validar()) {
+                Producto p = capturarDatos();
                 p.setId(Integer.parseInt(txtId.getText()));
-                if(productoDAO.modificar(p)) {
-                    JOptionPane.showMessageDialog(this, "✅ Producto Modificado");
-                    actualizarTodo();
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "⚠️ Seleccione un producto primero");
+                if(productoDAO.modificar(p)) { act(); JOptionPane.showMessageDialog(this, "🔄 Modificado"); }
             }
         });
 
         btnEliminar.addActionListener(e -> {
-            if (!txtId.getText().isEmpty()) {
-                if(JOptionPane.showConfirmDialog(this, "¿Borrar producto?") == 0) {
-                    productoDAO.eliminar(Integer.parseInt(txtId.getText()));
-                    actualizarTodo();
-                }
+            if(!txtId.getText().isEmpty() && JOptionPane.showConfirmDialog(this, "¿Borrar?")==0) {
+                productoDAO.eliminar(Integer.parseInt(txtId.getText()));
+                act();
             }
         });
 
-        btnLimpiar.addActionListener(e -> limpiarCampos());
+        btnLimpiar.addActionListener(e -> limpiar());
+        
+        // ACCIÓN DEL BOTÓN REPORTE
+        btnReporte.addActionListener(e -> generarReportePDF());
 
-        // Carga inicial
         listarProductos();
     }
 
-    // --- MÉTODOS DE AYUDA VISUAL ---
-
-    private void agregarEtiqueta(JPanel panel, String texto, int x, int y) {
-        JLabel lbl = new JLabel(texto);
-        lbl.setBounds(x, y, 200, 20);
-        lbl.setFont(fuenteLabels); // Usamos Arial Bold
-        lbl.setForeground(new Color(80, 80, 80));
-        panel.add(lbl);
+    // --- MÉTODO PARA GENERAR PDF ---
+    private void generarReportePDF() {
+        try {
+            MessageFormat header = new MessageFormat("REPORTE DE INVENTARIO - SOS PERÚ");
+            MessageFormat footer = new MessageFormat("Página {0,number,integer}");
+            
+            boolean complete = tblProductos.print(JTable.PrintMode.FIT_WIDTH, header, footer);
+            
+            if (complete) {
+                JOptionPane.showMessageDialog(this, "✅ Reporte generado correctamente");
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "❌ Error al generar reporte: " + e.getMessage());
+        }
     }
 
-    private JTextField agregarCaja(JPanel panel, int x, int y, int ancho) {
-        JTextField txt = new JTextField();
-        txt.setBounds(x, y, ancho, 30);
-        txt.setFont(fuenteCajas); // Usamos Arial Normal
-        // Margen interno para que el texto no se pegue al borde
-        txt.setBorder(BorderFactory.createCompoundBorder(
-            txt.getBorder(), 
-            BorderFactory.createEmptyBorder(2, 5, 2, 5)));
-        panel.add(txt);
-        return txt;
+    // --- AYUDAS ---
+    private String obtenerValor(int fila, int col) {
+        return tblProductos.getValueAt(fila, col) != null ? tblProductos.getValueAt(fila, col).toString() : "";
     }
 
-    private JButton crearBoton(String texto, Color color) {
-        JButton btn = new JButton(texto);
-        btn.setBackground(color);
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Arial", Font.BOLD, 12));
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return btn;
-    }
-
-    // --- MÉTODOS LÓGICOS ---
-
-    private void listarProductos() {
+        private void listarProductos() {
         List<Producto> lista = productoDAO.listar();
-        modelo = (DefaultTableModel) tblProductos.getModel();
         modelo.setRowCount(0);
         for (Producto p : lista) {
             modelo.addRow(new Object[]{
-                p.getId(), p.getCodigo(), p.getDescripcion(), p.getProveedor(), p.getStock(), p.getPrecio()
+                p.getId(), p.getCodigo(), p.getModelo(), p.getCategoria(), 
+                p.getDescripcion(), p.getStock(), "S/ " + p.getPrecio()
             });
         }
-        // Auto-ajustar ancho de descripción (Columna 2)
-        ajustarAnchoColumna(tblProductos, 2, 20);
+
+        // === AQUÍ ESTÁ LA MAGIA: TAMAÑOS FIJOS ===
+        // 0: ID (Muy pequeñito)
+        tblProductos.getColumnModel().getColumn(0).setPreferredWidth(30);
+        tblProductos.getColumnModel().getColumn(0).setMaxWidth(40); // Evita que se estire
+
+        // 1: CÓDIGO (Pequeño)
+        tblProductos.getColumnModel().getColumn(1).setPreferredWidth(70);
+
+        // 2 y 3: MODELO y CATEGORÍA (Medianos)
+        tblProductos.getColumnModel().getColumn(2).setPreferredWidth(110);
+        tblProductos.getColumnModel().getColumn(3).setPreferredWidth(110);
+
+        // 4: DESCRIPCIÓN (Gigante - Se lleva el espacio sobrante)
+        tblProductos.getColumnModel().getColumn(4).setPreferredWidth(350);
+
+        // 5: STOCK (Pequeño)
+        tblProductos.getColumnModel().getColumn(5).setPreferredWidth(50);
+
+        // 6: PRECIO (Mediano)
+        tblProductos.getColumnModel().getColumn(6).setPreferredWidth(80);
     }
 
-    private void ajustarAnchoColumna(JTable table, int colIndex, int padding) {
-        // Tu método mágico para ensanchar columnas
-        int ancho = 0;
-        // Cabeza
-        ancho = Math.max(ancho, table.getTableHeader().getDefaultRenderer()
-                .getTableCellRendererComponent(table, table.getColumnModel().getColumn(colIndex).getHeaderValue(), false, false, 0, colIndex)
-                .getPreferredSize().width);
-        // Filas
-        for (int i = 0; i < table.getRowCount(); i++) {
-            ancho = Math.max(ancho, table.prepareRenderer(table.getCellRenderer(i, colIndex), i, colIndex).getPreferredSize().width);
-        }
-        table.getColumnModel().getColumn(colIndex).setPreferredWidth(ancho + padding);
+    private void ajustarColumna(JTable table, int col, int minWidth) {
+        table.getColumnModel().getColumn(col).setPreferredWidth(minWidth);
     }
 
-    private void actualizarTodo() {
-        listarProductos();
-        limpiarCampos();
+    private void act() { listarProductos(); limpiar(); }
+    
+    private void limpiar() {
+        txtId.setText(""); txtCodigo.setText(""); txtModelo.setText(""); 
+        txtDescripcion.setText(""); txtProveedor.setText(""); txtStock.setText(""); txtPrecio.setText("");
+        cmbCategoria.setSelectedIndex(0);
     }
 
-    private void limpiarCampos() {
-        txtId.setText(""); txtCodigo.setText(""); txtDescripcion.setText("");
-        txtProveedor.setText(""); txtStock.setText(""); txtPrecio.setText("");
-    }
-
-    private boolean validarCampos() {
+    private boolean validar() {
         return !txtCodigo.getText().isEmpty() && !txtDescripcion.getText().isEmpty();
     }
 
-    private Producto crearProductoDesdeForm() {
+    private Producto capturarDatos() {
         Producto p = new Producto();
         p.setCodigo(txtCodigo.getText());
+        p.setModelo(txtModelo.getText());
+        p.setCategoria(cmbCategoria.getSelectedItem().toString());
         p.setDescripcion(txtDescripcion.getText());
         p.setProveedor(txtProveedor.getText());
         try { p.setStock(Integer.parseInt(txtStock.getText())); } catch(Exception e){ p.setStock(0); }
         try { p.setPrecio(Double.parseDouble(txtPrecio.getText())); } catch(Exception e){ p.setPrecio(0.0); }
-        p.setEstado(1);
         return p;
+    }
+
+    private void agregarEtiqueta(JPanel p, String t, int x, int y) {
+        JLabel l = new JLabel(t); l.setBounds(x, y, 150, 20); l.setFont(fuenteLabels); l.setForeground(Color.GRAY); p.add(l);
+    }
+    
+    private JTextField agregarCaja(JPanel p, int x, int y, int w) {
+        JTextField t = new JTextField(); t.setBounds(x, y, w, 30); t.setFont(fuenteCajas); p.add(t); return t;
+    }
+
+    private JButton crearBoton(String t, Color c) {
+        JButton b = new JButton(t); b.setBackground(c); b.setForeground(Color.WHITE); b.setFocusPainted(false); b.setFont(new Font("Segoe UI", Font.BOLD, 12)); b.setCursor(new Cursor(Cursor.HAND_CURSOR)); return b;
     }
 }
