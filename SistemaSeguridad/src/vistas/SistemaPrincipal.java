@@ -20,11 +20,18 @@ public class SistemaPrincipal extends JFrame {
         JTabbedPane pestañas = new JTabbedPane();
         pestañas.setFont(new Font("Segoe UI", Font.BOLD, 14));
         
-        // AGREGAR PESTAÑA 1: Nuestros Productos
+        // --- AQUÍ ESTÁ EL ORDEN CORRECTO (SOLO 3 LÍNEAS) ---
+        
+        // 1° Pestaña: EL DASHBOARD (Inicio)
+        pestañas.addTab("🏠 INICIO", new PanelInicio());
+
+        // 2° Pestaña: INVENTARIO
         pestañas.addTab("📦 INVENTARIO", new PanelProductos());
         
-        // AGREGAR PESTAÑA 2: Nuestro Personal
+        // 3° Pestaña: PERSONAL
         pestañas.addTab("👥 PERSONAL", new PanelUsuarios());
+        
+        // ---------------------------------------------------
         
         // 3. Agregar pestañas a la ventana
         add(pestañas);
