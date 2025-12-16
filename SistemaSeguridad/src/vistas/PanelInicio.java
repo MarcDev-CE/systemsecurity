@@ -50,7 +50,7 @@ public class PanelInicio extends JPanel {
         
         // BOTÓN CERRAR SESIÓN
         JButton btnLogout = new JButton("CERRAR SESIÓN");
-        btnLogout.setBounds(630, 30, 150, 45);
+        btnLogout.setBounds(630, 30, 150, 45);   
         btnLogout.setBackground(new Color(52, 152, 219)); 
         btnLogout.setForeground(Color.WHITE);
         btnLogout.setFont(fontBotones); // Fuente uniforme
@@ -58,7 +58,7 @@ public class PanelInicio extends JPanel {
         btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         btnLogout.addActionListener(e -> {
-            if(JOptionPane.showConfirmDialog(this, "¿Cambiar de usuario?", "Cerrar Sesión", JOptionPane.YES_NO_OPTION) == 0) {
+            if(JOptionPane.showConfirmDialog(this, "¿Desea Cerrar Sesión?", "Cerrar Sesión", JOptionPane.YES_NO_OPTION) == 0) {
                 ((JFrame) SwingUtilities.getWindowAncestor(this)).dispose();
                 new Login().setVisible(true);
             }
